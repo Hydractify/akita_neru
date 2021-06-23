@@ -1,0 +1,8 @@
+# Ignore NodeJS packages
+node_modules/
+
+# Ignore the directory where the project is built into
+bin/
+
+# Ignore yarn error logs
+yarn-error.log
