@@ -10,7 +10,7 @@ export class DatabaseManager extends BaseManager
   // The database's connection.
   public connection: Connection | null = null;
 
-  protected configManager: ConfigManager;
+  protected config: ConfigManager;
 
   /** Obligatory implementation */
   protected files: BaseManagedFile[] = [];
@@ -19,19 +19,22 @@ export class DatabaseManager extends BaseManager
   {
     super(filePath ? filePath : __filename);
 
-    this.configManager = configManager;
+    this.config = configManager;
   }
 
   public async init (): Promise<void>
   {
-    if (this.configManager.options.database.disabled) return;
-
     this.connection = await createConnection({
-      ...this.configManager.options.database.options!,
+      ...this.config.options.database.options,
       entities: [
-        join(this.configManager.projectRootDirectory, 'entities'),
-        join(this.configManager.akitaNeruRoot, 'builtin', 'entities'),
+        this.entitiesDirectory,
+        join(this.config.akitaNeruRoot, 'builtin', 'entities'),
       ],
     });
+  }
+
+  private get entitiesDirectory (): string
+  {
+    return this.config.options.database.entitiesDirectory;
   }
 }

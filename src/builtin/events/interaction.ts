@@ -29,7 +29,7 @@ class InteractionEvent extends ClientEvent
       if (!command) return;
 
       // Restrict developer commands, to developers only
-      if (command.options.isDeveloper && !this.framework.config.options.developers.includes(interaction.user.id))
+      if (command.options.isDeveloper && !this.framework.config.options.developerIDs.includes(interaction.user.id))
       {
         await interaction.reply({ content: 'This is a command restricted to developers only.', ephemeral: true });
 

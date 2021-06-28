@@ -43,13 +43,19 @@ export class ConfigManager extends BaseManagedFile
     await this.isValidConfiguration();
   }
 
-  /** Gets the absolute path of the root of the framework. */
+  /**
+   * Gets the absolute path of the root of the framework.
+   * @returns {string}
+   */
   public get akitaNeruRoot (): string
   {
     return join(__dirname, '..', '..');
   }
 
-  /** Gets the project's root directory */
+  /**
+   * Gets the user's project root directory
+   * @returns {string}
+   */
   public get projectRootDirectory (): string
   {
     const packageConfig = require(join(this.rootDirectory, 'package.json'));
@@ -60,6 +66,7 @@ export class ConfigManager extends BaseManagedFile
     return join(this.rootDirectory, packageConfig.main).replace(/\/\w+\.?\w*$/, '');
   }
 
+  /** Adds an emitter to the internal emitters */
   public addEmitter (emitters: { [key: string]: EventEmitter }): void
   {
     for (const [key, emitter] of Object.entries(emitters))
@@ -70,12 +77,20 @@ export class ConfigManager extends BaseManagedFile
     }
   }
 
+  /**
+   * The only purpose of this method is to have auto-completion within .akitaneru.js files
+   * @param {IConfig} config - The framework's configuration schema.
+   * @returns {IConfig}
+   */
   public static configure (config: IConfig): IConfig
   {
     return config;
   }
 
-  /** Get the root of the project using the framework's configuration file */
+  /**
+   * Gets the root of the project using the framework's configuration file
+   * @returns {string}
+   */
   private getUserRootDirectory (): string
   {
     let processDir = process.cwd();
@@ -90,7 +105,10 @@ export class ConfigManager extends BaseManagedFile
     throw new Error("Could not find the package root including a 'package.json'.");
   }
 
-  /** Gets the configuration file of the application */
+  /**
+   * Gets the configuration file of the application
+   * @returns {IConfig}
+   */
   private getConfigFile (): IConfig
   {
     const configFilePath = join(this.rootDirectory, '.akitaneru.js');
@@ -100,7 +118,10 @@ export class ConfigManager extends BaseManagedFile
     return require(configFilePath);
   }
 
-  /** Fetches the token of the application if it's not supplied in the configuration file */
+  /**
+   * Fetches the token of the application if it's not supplied in the configuration file
+   * @returns {string}
+   */
   private async fetchRootFile (fileName: string, errorMessage: string): Promise<string>
   {
     const filePath = join(this.rootDirectory, fileName);
@@ -115,7 +136,10 @@ export class ConfigManager extends BaseManagedFile
     return file.trim();
   }
 
-  /** Fetches the ormconfig if there's any */
+  /**
+   * Fetches the ormconfig if there's any
+   * @returns {ConnectionOptions}
+   */
   private async fetchORMConfig (): Promise<ConnectionOptions>
   {
     const dirents: Dirent[] = await readdir(this.rootDirectory, { withFileTypes: true });
@@ -128,32 +152,94 @@ export class ConfigManager extends BaseManagedFile
   /**
    * Checks the validity of the configuration file
    * TODO: Use TypeScript type comparasion shenenigans to validate the file instead
+   * @returns {boolean}
    */
   private async isValidConfiguration (): Promise<boolean>
   {
-    // Check if the client is configured and if there's a token,
-    // defaults to searching for a token file otherwise.
-    if (!this.options.client || !this.options.client.token)
-    {
-      this.options.client = {
-        token: await this.fetchRootFile('.token', 'There is no token file or token configured for this application.'),
-      };
-    }
+    // Check if the client is properly configured.
+    await this.handleClientValidation();
 
-    // Check if there is a configuration for commands, if not, leave them enabled.
-    if (!this.options.commands) this.options.commands = { disabled: false, messages: { }, prefix: ['-'] };
-    if (!this.options.commands.messages) this.options.commands.messages = { };
-    if (!this.options.commands.prefix) this.options.commands.prefix = ['-']; // Set default prefix if there's none.
+    // Check if the command manager is properly configured.
+    this.handleCommandValidation();
 
-    // Check if the database is configured. Use the .ormconfig if present.
-    if (!this.options.database) this.options.database = { disabled: false };
-    if (!this.options.database.options) this.options.database.options = await this.fetchORMConfig();
+    // Check if the database manager is properly configured.
+    await this.handleDatabaseValidation();
 
-    if (!this.options.developers) throw new Error('No developer IDs are present in the configuration.');
+    // Check if the event manager is properly configured.
+    this.handleEventValidation();
 
-    // Check whether the directories were passed or not.
-    if (!this.options.directories) this.options.directories = {};
+    // Verify whether there are any developer IDs configured, this is required to limit the use of commands such as 'eval'.
+    if (!this.options.developerIDs) throw new Error('No developer IDs are present in the configuration.');
 
     return true;
+  }
+
+  /**
+   * Handles the basic validation of the 'discord.js' client
+   * @returns {boolean}
+   */
+  private async handleClientValidation (): Promise<void>
+  {
+    // The application will not start without proper client options, so the framework shouldn't too.
+    if (!this.options.client || !this.options.client.options) throw new Error('.akitaneru.js is missing Client options.');
+
+    // If there is no token configured in '.akitaneru.js' then check if there is a '.token' file.
+    if (!this.options.client.token)
+    {
+      this.options.client.token = await this.fetchRootFile('.token', 'There is no token file or token configured for this application.');
+    }
+  }
+
+  /**
+   * Handles the basic validation of the command handler.
+   * @return {boolean}
+   */
+  private handleCommandValidation (): void
+  {
+    const defaults = {
+      directory: join(this.projectRootDirectory, 'commands'),
+      disabled: false,
+      prefix: ['-'],
+    };
+
+    // If there isn't any configuration set for commands, set basic defaults;
+    if (!this.options.commands) this.options.commands = defaults;
+
+    // Set a default prefix if there are none.
+    if (!this.options.commands.prefix) this.options.commands.prefix = defaults.prefix;
+
+    // Set a default directory for commands if there is none.
+    if (!this.options.commands.directory) this.options.commands.directory = defaults.directory;
+  }
+
+  private async handleDatabaseValidation (): Promise<void>
+  {
+    const ormConfig = await this.fetchORMConfig();
+    const defaults = {
+      entitiesDirectory: join(this.projectRootDirectory, 'entities'),
+      options: ormConfig,
+    };
+
+    // If there is an 'ormconfig.x' file present, check whether there is anything within it.
+    if (!this.options.database && Object.keys(ormConfig).length) this.options.database = defaults;
+
+    // Enforce the use of a database by not allowing the application to start without configuring TypeORM.
+    if (!this.options.database || !this.options.database.options) throw new Error('.akitaneru.js is missing Database options.');
+
+    // Set a default directory for entities if there is none.
+    if (!this.options.database.entitiesDirectory) this.options.database.entitiesDirectory = defaults.entitiesDirectory;
+  }
+
+  private handleEventValidation (): void
+  {
+    const defaults = {
+      directory: join(this.projectRootDirectory, 'events'),
+    };
+
+    // Check if there's any configuration set for the event manager.
+    if (!this.options.events) this.options.events = defaults;
+
+    // If there's no directory set for events, set a default.
+    if (!this.options.events.directory) this.options.events.directory = defaults.directory;
   }
 }

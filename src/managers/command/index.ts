@@ -125,7 +125,7 @@ export class CommandManager extends BaseManager
 
   private get commandsDirectory (): string
   {
-    return this.config.options.directories.commands ?? join(this.config.projectRootDirectory, 'commands');
+    return this.config.options.commands.directory;
   }
 
   private async fetchBuiltInCommands (moduleName: string): Promise<BaseCommand[]>

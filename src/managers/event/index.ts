@@ -43,7 +43,7 @@ export class EventManager extends BaseManager
 
   private get eventDirectory (): string
   {
-    return join(this.config.projectRootDirectory, 'events');
+    return this.config.options.events.directory;
   }
 
   private get builtInEventDirectory (): string

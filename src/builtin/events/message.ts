@@ -64,13 +64,13 @@ class MessageEvent extends ClientEvent
       const command = this.client.commands.find(parsedCommand.name, CommandType.MESSAGE);
       if (!command)
       {
-        await message.reply(this.framework.config.options.commands.messages.invalid ?? `There is no command matching \`${parsedCommand.name}\`.`);
+        await message.reply(`There is no command matching \`${parsedCommand.name}\`.`);
 
         return;
       }
 
       // Restrict developer commands, to developers only
-      if (command.options.isDeveloper && !this.framework.config.options.developers.includes(message.author.id))
+      if (command.options.isDeveloper && !this.framework.config.options.developerIDs.includes(message.author.id))
       {
         await message.reply('This is a command restricted to developers only.');
 

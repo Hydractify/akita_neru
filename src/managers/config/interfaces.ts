@@ -5,26 +5,22 @@ import { ConnectionOptions } from 'typeorm';
 export interface IConfig
 {
   client: {
-    options?: ClientOptions
+    options: ClientOptions
     token: string
   }
   commands: {
-    disabled?: boolean
     allowDM?: boolean
+    directory: string
+    disabled?: boolean
     prefix: string[]
-    messages: {
-      invalid?: string
-    }
   }
   database: {
-    disabled?: boolean
-    options?: ConnectionOptions
+    entitiesDirectory: string
+    options: ConnectionOptions
   }
-  developers: string[]
-  directories: {
-    commands?: string
-    entities?: string
-    events?: string
+  developerIDs: string[]
+  events: {
+    directory: string
   }
   emitters?: { [key: string]: EventEmitter }
   _emitters: Map<string, EventEmitter> // The one used internally.
