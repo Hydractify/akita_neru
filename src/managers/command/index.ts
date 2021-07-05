@@ -1,3 +1,4 @@
+import { Collection } from 'discord.js';
 import { join } from 'path';
 
 import { AkitaNeru } from '../framework';
@@ -17,9 +18,9 @@ export class CommandManager extends BaseManager
    */
   public config: ConfigManager;
 
-  public interactions: Map<string, InteractionCommand>;
+  public interactions: Collection<string, InteractionCommand>;
 
-  public messages: Map<string, MessageCommand>;
+  public messages: Collection<string, MessageCommand>;
 
   protected files: BaseCommand[] = [];
 
@@ -35,8 +36,8 @@ export class CommandManager extends BaseManager
     this.framework = akita;
     this.config = akita.config;
 
-    this.interactions = new Map();
-    this.messages = new Map();
+    this.interactions = new Collection();
+    this.messages = new Collection();
   }
 
   public async init (): Promise<void>
@@ -74,10 +75,16 @@ export class CommandManager extends BaseManager
     {
       // Satanitize prefix and test it
       const regexp = new RegExp(`^${prefix.replace(/[-[\]{}()*+?.,\\^$|#\s]/g, '\\$&')}`, 'i');
-      if (!regexp.test(splitContent[0])) return;
 
-      usedPrefix = prefix;
+      if (regexp.test(splitContent[0]))
+      {
+        usedPrefix = prefix;
+        break;
+      }
     }
+
+    // If no prefix was used, return.
+    if (!usedPrefix) return;
 
     // Ensure that the message isn't just the prefix
     if (content.length <= usedPrefix.length) return;
@@ -93,7 +100,7 @@ export class CommandManager extends BaseManager
   {
     if (type === CommandType.INTERACTION) return this.interactions.get(name);
 
-    return this.messages.get(name);
+    return this.messages.get(name) || this.messages.find(command => command.options.aliases?.includes(name) ?? false);
   }
 
   public async setInteractions (): Promise<void>
@@ -109,6 +116,7 @@ export class CommandManager extends BaseManager
 
         continue;
       }
+
       // FIXME Check if there's any difference, if so, update.
       // await this.framework.client.application?.commands.edit(command, localCommand.commandData);
     }

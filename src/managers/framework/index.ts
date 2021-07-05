@@ -1,3 +1,5 @@
+import 'reflect-metadata'; // Needed for TypeORM
+
 import { Client } from '../../structures/client';
 import { ConfigManager } from '../../managers/config';
 import { DatabaseManager } from '../../managers/database';

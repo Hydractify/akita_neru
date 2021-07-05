@@ -1,6 +1,7 @@
-import { EventEmitter } from 'events';
 import { ClientOptions } from 'discord.js';
 import { ConnectionOptions } from 'typeorm';
+import { EventEmitter } from 'events';
+import { ICommandOptions } from '../../structures/_all';
 
 export interface IConfig
 {
@@ -10,6 +11,7 @@ export interface IConfig
   }
   commands: {
     allowDM?: boolean
+    defaultOptions: ICommandOptions
     directory: string
     disabled?: boolean
     prefix: string[]

@@ -4,8 +4,9 @@ import { Dirent, existsSync } from 'fs';
 import { readdir, readFile } from 'fs/promises';
 import { join, normalize, sep } from 'path';
 
-import { IConfig } from './interfaces';
 import { BaseManagedFile } from '../../structures/file';
+import { ChannelType } from '../../structures/command/enums';
+import { IConfig } from './interfaces';
 
 /**
  * Helper class for managing the configuration file
@@ -197,6 +198,12 @@ export class ConfigManager extends BaseManagedFile
   private handleCommandValidation (): void
   {
     const defaults = {
+      defaultOptions: {
+        name: '',
+        description: '',
+        channelType: ChannelType.GUILD,
+        cooldown: 5000, // 5 seconds.
+      },
       directory: join(this.projectRootDirectory, 'commands'),
       disabled: false,
       prefix: ['-'],
@@ -207,6 +214,9 @@ export class ConfigManager extends BaseManagedFile
 
     // Set a default prefix if there are none.
     if (!this.options.commands.prefix) this.options.commands.prefix = defaults.prefix;
+
+    // Set default options for new commands if there are none.
+    if (!this.options.commands.defaultOptions) this.options.commands.defaultOptions = defaults.defaultOptions;
 
     // Set a default directory for commands if there is none.
     if (!this.options.commands.directory) this.options.commands.directory = defaults.directory;

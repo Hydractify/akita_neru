@@ -31,13 +31,14 @@ import {
   BaseEvent,
   BaseManagedFile,
   BaseManager,
+  ChannelType,
   Client,
   ClientEvent,
+  ICommandOptions,
+  IEventOptions,
   InteractionCommand,
   MessageCommand,
   RawEvent,
-  ICommandOptions,
-  IEventOptions,
 } from './structures/_all';
 
 // Classes
@@ -46,13 +47,14 @@ export {
   BaseEvent,
   BaseManagedFile,
   BaseManager,
+  ChannelType,
   Client,
   ClientEvent,
+  ICommandOptions,
+  IEventOptions,
   InteractionCommand,
   MessageCommand,
   RawEvent,
-  ICommandOptions,
-  IEventOptions,
 };
 
 /**

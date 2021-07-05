@@ -1,14 +1,14 @@
-import { Connection, createConnection } from 'typeorm';
+import { Connection, createConnection, EntityTarget, Repository } from 'typeorm';
 import { join } from 'path';
 
-import { ConfigManager } from '../config';
-import { BaseManager } from '../../structures/manager';
 import { BaseManagedFile } from '../../structures/file';
+import { BaseManager } from '../../structures/manager';
+import { ConfigManager } from '../config';
 
 export class DatabaseManager extends BaseManager
 {
-  // The database's connection.
-  public connection: Connection | null = null;
+  /** The database's connection. */
+  public connection!: Connection;
 
   protected config: ConfigManager;
 
@@ -27,12 +27,19 @@ export class DatabaseManager extends BaseManager
     this.connection = await createConnection({
       ...this.config.options.database.options,
       entities: [
-        this.entitiesDirectory,
-        join(this.config.akitaNeruRoot, 'builtin', 'entities'),
+        `${this.entitiesDirectory}/**/*.js`,
+        `${join(this.config.akitaNeruRoot, 'builtin', 'entities')}/**/*.js`,
       ],
     });
   }
 
+  /** Shorthand to get repositories. */
+  public getRepository<Entity> (target: EntityTarget<Entity>): Repository<Entity>
+  {
+    return this.connection.getRepository(target);
+  }
+
+  /** The user's directory containing the ORM entities. */
   private get entitiesDirectory (): string
   {
     return this.config.options.database.entitiesDirectory;

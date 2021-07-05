@@ -5,9 +5,12 @@ import {
   PermissionString,
 } from 'discord.js';
 
+import { ChannelType } from './enums';
+
 export interface ICommandOptions
 {
   aliases?: string[],
+  channelType?: ChannelType
   cooldown?: number, // seconds
   defaultPermission?: boolean
   description: string,

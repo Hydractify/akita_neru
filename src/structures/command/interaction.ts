@@ -1,9 +1,11 @@
-import { ApplicationCommandData } from 'discord.js';
+import { ApplicationCommandData, Interaction } from 'discord.js';
 
+import CommandEntry from '../../builtin/entities/CommandEntries';
 import { AkitaNeru } from '../../managers/framework';
 import { BaseCommand } from './base';
 import { ICommandOptions } from './interfaces';
 
+/** The abstract class for creating interaction commands */
 export abstract class InteractionCommand extends BaseCommand
 {
   constructor (akita: AkitaNeru, filename: string, options: ICommandOptions)
@@ -11,6 +13,7 @@ export abstract class InteractionCommand extends BaseCommand
     super(akita, filename, options);
   }
 
+  /** Build the data required to register a slash command. */
   public get commandData (): ApplicationCommandData
   {
     const data: ApplicationCommandData = {
@@ -22,5 +25,17 @@ export abstract class InteractionCommand extends BaseCommand
     if (this.options.interactionOptions) data.options = this.options.interactionOptions;
 
     return data;
+  }
+
+  /**
+   * This is called whenever a command is validated and ready to run. This will parse/set data for running commands.
+   * @param {Interaction} interaction
+   * @param {CommandEntry} entry - The command entry data within the database.
+   */
+  public async execute (interaction: Interaction, entry: CommandEntry): Promise<void>
+  {
+    this.entry = entry;
+
+    return this.callback(interaction);
   }
 }
