@@ -1,23 +1,22 @@
-import { BaseCommand, InteractionCommand, MessageCommand } from './command';
-import { BaseEvent, ClientEvent, RawEvent } from './event';
-import { BaseManagedFile } from './file';
-import { BaseManager } from './manager';
-import { ChannelType } from './command/enums';
-import { Client } from './client';
-import { ICommandOptions } from './command/interfaces';
-import { IEventOptions } from './event/interfaces';
+// Client structures.
+export * from './client';
+export * from './client/resolver';
+export * from './client/resolver/interfaces';
 
-export {
-  BaseCommand,
-  BaseEvent,
-  BaseManagedFile,
-  BaseManager,
-  ChannelType,
-  Client,
-  ClientEvent,
-  ICommandOptions,
-  IEventOptions,
-  InteractionCommand,
-  MessageCommand,
-  RawEvent,
-};
+// Command structures.
+export * from './command';
+export * from './command/enums';
+export * from './command/interaction';
+export * from './command/resolver';
+export * from './command/resolver/interfaces';
+
+// Event structures.
+export * from './event';
+export * from './event/interfaces';
+
+// File structures.
+export * from './file';
+export * from './file/enums';
+
+// Manager structures.
+export * from './manager';
