@@ -6,9 +6,7 @@ import { AkitaNeru } from '../../managers/framework';
 import { ChannelType } from '../../structures/command/enums';
 import { Client } from '../../structures/client';
 import { ClientEvent } from '../../structures/event';
-import { CommandType } from '../../managers/command/enums';
 import { DatabaseManager } from '../../managers/database';
-import { MessageCommand } from '../../structures/command';
 
 type NonNullProperties<T, NonNull extends keyof T> = {
   [P in NonNull]: NonNullable<T[P]>;
@@ -52,7 +50,7 @@ class MessageEvent extends ClientEvent
       }
 
       // Parse command's message to check whether the prefix is being used.
-      const parsedCommand = this.client.commands.parseMessage(message.content);
+      const parsedCommand = this.client.commands.resolver.parsePrefix(message.content);
       if (!parsedCommand) return;
 
       if (isGuildMessage(message))
@@ -69,10 +67,10 @@ class MessageEvent extends ClientEvent
         return;
       }
 
-      const command = this.client.commands.find(parsedCommand.name, CommandType.MESSAGE) as MessageCommand;
+      const command = this.client.commands.resolver.resolveMessage(parsedCommand.commandName);
       if (!command)
       {
-        await message.reply(`There is no command matching \`${parsedCommand.name}\`.`);
+        await message.reply(`There is no command matching \`${parsedCommand.commandName}\`.`);
 
         return;
       }

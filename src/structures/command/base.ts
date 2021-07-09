@@ -3,8 +3,7 @@ import { Client, Interaction, Message } from 'discord.js';
 import CommandEntry from '../../builtin/entities/CommandEntries';
 import { AkitaNeru } from '../../managers/framework';
 import { BaseManagedFile } from '../file';
-import { ICommandOptions } from './interfaces';
-import { ICommandParse } from '../../managers/command/interfaces';
+import { ICommandAsserts, ICommandOptions } from './interfaces';
 
 /** Base command class for creating commands */
 export abstract class BaseCommand extends BaseManagedFile
@@ -35,15 +34,15 @@ export abstract class BaseCommand extends BaseManagedFile
    * This is called whenever a command is validated and ready to run. This will parse/set data for running commands.
    * @param {(Message | Interaction)} i - The message/interaction coming from the client event.
    * @param {CommandEntry} entry - The command entry data within the database.
-   * @param {ICommandParse} [asserts] - The parsed message with valuable data such as the user's arguments for commands.
+   * @param {ICommandAsserts} [asserts] - The parsed message with valuable data such as the user's arguments for commands.
    */
-  public abstract execute (i: Message | Interaction, entry: CommandEntry, asserts?: ICommandParse): Promise<void> | void;
+  public abstract execute (i: Message | Interaction, entry: CommandEntry, asserts?: ICommandAsserts): Promise<void> | void;
 
   /**
    * The callback of the command.
    * @param {(Message | Interaction)} i - The message/interaction coming from the client event.
-   * @param {ICommandParse} [asserts] - The parsed message with valuable data such as the user's arguments for commands.
+   * @param {ICommandAsserts} [asserts] - The parsed message with valuable data such as the user's arguments for commands.
    */
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  protected abstract callback (i: Message | Interaction, asserts?: ICommandParse): Promise<any> | any;
+  protected abstract callback (i: Message | Interaction, asserts?: ICommandAsserts): Promise<any> | any;
 }

@@ -1,5 +1,2 @@
-import { ListenerUtil } from './ListenerUtil';
-
-export {
-  ListenerUtil,
-};
+// Listener utility.
+export * from './ListenerUtil';

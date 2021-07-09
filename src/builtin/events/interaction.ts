@@ -6,9 +6,7 @@ import { AkitaNeru } from '../../managers/framework';
 import { ChannelType } from '../../structures/command/enums';
 import { Client } from '../../structures/client';
 import { ClientEvent } from '../../structures/event';
-import { CommandType } from '../../managers/command/enums';
 import { DatabaseManager } from '../../managers/database';
-import { InteractionCommand } from '../../structures/command';
 
 type NonNullProperties<T, NonNull extends keyof T> = {
   [P in NonNull]: NonNullable<T[P]>;
@@ -26,7 +24,7 @@ class InteractionEvent extends ClientEvent
 {
   private readonly client: Client;
 
-  private readonly database: DatabaseManager
+  private readonly database: DatabaseManager;
 
   private readonly framework: AkitaNeru;
 
@@ -59,7 +57,7 @@ class InteractionEvent extends ClientEvent
 
     if (interaction.isCommand())
     {
-      const command = this.client.commands.find(interaction.commandName, CommandType.INTERACTION) as InteractionCommand;
+      const command = this.client.commands.resolver.resolveInteraction(interaction.commandName);
       if (!command) return;
 
       // Check if the command can only be ran in DMs.

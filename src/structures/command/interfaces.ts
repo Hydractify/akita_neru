@@ -9,14 +9,20 @@ import { ChannelType } from './enums';
 
 export interface ICommandOptions
 {
-  aliases?: string[],
+  aliases?: string[]
   channelType?: ChannelType
-  cooldown?: number, // seconds
+  cooldown?: number // seconds
   defaultPermission?: boolean
-  description: string,
+  description: string
   interactionOptions?: ApplicationCommandOptionData[]
   isDeveloper?: boolean
-  name: string,
-  permissions?: PermissionString[],
-  restricted?: (i: Message | Interaction) => boolean,
+  name: string
+  permissions?: PermissionString[]
+  restricted?: (i: Message | Interaction) => boolean
+}
+
+export interface ICommandAsserts
+{
+  args: string[]
+  parsedContent: string
 }

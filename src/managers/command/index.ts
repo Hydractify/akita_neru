@@ -4,23 +4,24 @@ import { join } from 'path';
 import { AkitaNeru } from '../framework';
 import { BaseCommand, InteractionCommand, MessageCommand } from '../../structures/command';
 import { BaseManager } from '../../structures/manager';
-import { CommandType } from './enums';
 import { ConfigManager } from '../../managers/config';
-import { ICommandParse } from './interfaces';
+import { CommandResolver } from '../../structures/command/resolver';
 
 /**
  * Class for managing commands set up by the user
  */
 export class CommandManager extends BaseManager
 {
-  /**
-   * Config manager used by the framework
-   */
-  public config: ConfigManager;
-
   public interactions: Collection<string, InteractionCommand>;
 
   public messages: Collection<string, MessageCommand>;
+
+  public resolver: CommandResolver;
+
+  /**
+   * Config manager used by the framework
+   */
+  protected config: ConfigManager;
 
   protected files: BaseCommand[] = [];
 
@@ -35,6 +36,7 @@ export class CommandManager extends BaseManager
 
     this.framework = akita;
     this.config = akita.config;
+    this.resolver = new CommandResolver(this, akita.config);
 
     this.interactions = new Collection();
     this.messages = new Collection();
@@ -63,44 +65,6 @@ export class CommandManager extends BaseManager
     this.files = [];
 
     await this.init();
-  }
-
-  public parseMessage (content: string): ICommandParse | undefined
-  {
-    const splitContent = content.split(/\s+/);
-
-    const prefixes = this.config.options.commands.prefix;
-    let usedPrefix = '';
-    for (const prefix of prefixes)
-    {
-      // Satanitize prefix and test it
-      const regexp = new RegExp(`^${prefix.replace(/[-[\]{}()*+?.,\\^$|#\s]/g, '\\$&')}`, 'i');
-
-      if (regexp.test(splitContent[0]))
-      {
-        usedPrefix = prefix;
-        break;
-      }
-    }
-
-    // If no prefix was used, return.
-    if (!usedPrefix) return;
-
-    // Ensure that the message isn't just the prefix
-    if (content.length <= usedPrefix.length) return;
-
-    return {
-      args: splitContent.slice(1),
-      content: splitContent.slice(1).join(''),
-      name: splitContent[0].slice(usedPrefix.length),
-    };
-  }
-
-  public find (name: string, type: CommandType): MessageCommand | InteractionCommand | undefined
-  {
-    if (type === CommandType.INTERACTION) return this.interactions.get(name);
-
-    return this.messages.get(name) || this.messages.find(command => command.options.aliases?.includes(name) ?? false);
   }
 
   public async setInteractions (): Promise<void>

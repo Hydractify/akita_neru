@@ -4,6 +4,7 @@ import { AkitaNeru } from '../../managers/framework';
 import { CommandManager } from '../../managers/command';
 import { EventManager } from '../../managers/event';
 import { ListenerUtil } from '../../util/ListenerUtil';
+import { Resolver } from './resolver';
 
 const { on, once, registerListeners }: typeof ListenerUtil = ListenerUtil;
 
@@ -12,6 +13,8 @@ export class Client extends DJSClient
   public readonly commands: CommandManager;
 
   public readonly events: EventManager;
+
+  public readonly resolver: Resolver;
 
   protected readonly framework: AkitaNeru;
 
@@ -24,6 +27,8 @@ export class Client extends DJSClient
     this.commands = new CommandManager(this.framework);
 
     this.events = new EventManager(this.framework);
+
+    this.resolver = new Resolver(this, this.framework.config);
 
     registerListeners(this);
   }
