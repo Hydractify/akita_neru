@@ -1,7 +1,8 @@
 import { ClientOptions } from 'discord.js';
 import { ConnectionOptions } from 'typeorm';
 import { EventEmitter } from 'events';
-import { ICommandOptions } from '../../structures/_all';
+
+import { ICommandOptions } from '../../structures/command/interfaces';
 
 export interface IConfig
 {

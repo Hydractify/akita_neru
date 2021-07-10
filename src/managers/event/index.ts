@@ -33,14 +33,6 @@ export class EventManager extends BaseManager
     this.listenEvents();
   }
 
-  public async refresh (): Promise<void>
-  {
-    this.files.forEach(event => event.remove());
-    this.files = [];
-
-    await this.init();
-  }
-
   private get eventDirectory (): string
   {
     return this.config.options.events.directory;

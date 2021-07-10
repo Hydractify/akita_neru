@@ -8,7 +8,7 @@ import { FileEvents } from './enums';
 export abstract class BaseManagedFile extends EventEmitter
 {
   /** The path for this file */
-  private readonly filePath: string;
+  protected readonly filePath: string;
 
   /**
    * @param {string} path - The absolute path of the current file (__filename).

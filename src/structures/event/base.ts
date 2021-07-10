@@ -1,6 +1,7 @@
 import { EventEmitter } from 'events';
 
 import { BaseManagedFile } from '../file';
+import { FileEvents } from '../file/enums';
 import { IEventOptions } from './interfaces';
 
 export abstract class BaseEvent extends BaseManagedFile
@@ -14,24 +15,41 @@ export abstract class BaseEvent extends BaseManagedFile
    */
   protected readonly name: string;
 
+  private boundCallback: () => void;
+
   constructor (filePath: string, options: IEventOptions)
   {
     super(filePath);
 
     this.emitter = options.emitter;
     this.name = options.name;
+
+    this.boundCallback = this.callback.bind(this);
   }
 
   /** Add a listener to the Client EventEmitter */
   public listen (): void
   {
-    this.emitter.on(this.name, this.callback.bind(this));
+    this.emitter.on(this.name, this.boundCallback);
+  }
+
+  /**
+   * "Reloads" the file.
+   * This removes the file from the cache and Node will re-load it once it's required again.
+   */
+  public override reload (): void
+  {
+    this.remove();
+
+    delete require.cache[this.filePath];
+
+    this.emit(FileEvents.RELOAD);
   }
 
   /** Remove the registered listener. */
   public remove (): void
   {
-    this.emitter.removeListener(this.name, this.callback);
+    this.emitter.removeListener(this.name, this.boundCallback);
   }
 
   /** The callback of the event being listened to. */

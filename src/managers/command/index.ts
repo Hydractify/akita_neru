@@ -59,14 +59,6 @@ export class CommandManager extends BaseManager
     this.files = [...messageCommands, ...interactionCommands];
   }
 
-  public async refresh (): Promise<void>
-  {
-    this.files.forEach(command => command.reload());
-    this.files = [];
-
-    await this.init();
-  }
-
   public async setInteractions (): Promise<void>
   {
     const commands = await this.framework.client.application?.commands.fetch();

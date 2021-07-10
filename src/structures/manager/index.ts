@@ -29,9 +29,12 @@ export abstract class BaseManager extends BaseManagedFile
    * "Reloads" all managed files.
    * This removes each file from the cache and Node will re-load them once they're required again.
    */
-  public reloadAllFiles (): void
+  public async reloadAllFiles (): Promise<void>
   {
     this.files.forEach(file => file.reload());
+    this.files = [];
+
+    await this.init();
   }
 
   /**
