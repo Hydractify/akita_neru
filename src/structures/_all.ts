@@ -6,7 +6,7 @@ export * from './client/resolver/interfaces';
 // Command structures.
 export * from './command';
 export * from './command/enums';
-export * from './command/interaction';
+export * from './command/interfaces';
 export * from './command/resolver';
 export * from './command/resolver/interfaces';
 
