@@ -231,10 +231,10 @@ export class CommandHandler
 
   /**
    * Check whether it's a guild object or not.
-   * @param {*} i - The object to be checked.
+   * @param {GuildObject} i - The object to be checked.
    * @returns {boolean}
    */
-  public isGuildObject (i: any): i is GuildObject // eslint-disable-line @typescript-eslint/no-explicit-any
+  public isGuildObject (i: GuildObject): i is GuildObject
   {
     return i.guild && i.channel instanceof TextChannel;
   }
