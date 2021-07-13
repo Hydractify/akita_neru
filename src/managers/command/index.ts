@@ -2,21 +2,28 @@ import { Collection } from 'discord.js';
 import { join } from 'path';
 
 import { AkitaNeru } from '../framework';
-import { BaseCommand, InteractionCommand, MessageCommand } from '../../structures/command';
+import { BaseCommand, ComponentCommand, SlashCommand, MessageCommand } from '../../structures/command';
 import { BaseManager } from '../../structures/manager';
-import { ConfigManager } from '../../managers/config';
+import { Client } from '../../structures/client';
+import { CommandHandler } from './handler';
 import { CommandResolver } from '../../structures/command/resolver';
+import { ConfigManager } from '../../managers/config';
 
 /**
  * Class for managing commands set up by the user
  */
 export class CommandManager extends BaseManager
 {
-  public interactions: Collection<string, InteractionCommand>;
+  public handler: CommandHandler;
+
+  public resolver: CommandResolver;
+
+  public components: Collection<string, ComponentCommand>;
 
   public messages: Collection<string, MessageCommand>;
 
-  public resolver: CommandResolver;
+  public slashes: Collection<string, SlashCommand>;
+
 
   /**
    * Config manager used by the framework
@@ -30,40 +37,48 @@ export class CommandManager extends BaseManager
   /**
    * Creates a command manager
    */
-  constructor (akita: AkitaNeru)
+  constructor (akita: AkitaNeru, client: Client)
   {
     super(__filename);
 
     this.framework = akita;
     this.config = akita.config;
     this.resolver = new CommandResolver(this, akita.config);
+    this.handler = new CommandHandler(akita, client);
 
-    this.interactions = new Collection();
+    this.components = new Collection();
     this.messages = new Collection();
+    this.slashes = new Collection();
   }
 
   public async init (): Promise<void>
   {
+    const componentCommands = [
+      ...await this.fetchBuiltInCommands('ComponentCommand'),
+      ...await this.fetchUserCommands('ComponentCommand'),
+    ] as ComponentCommand[];
+    componentCommands.forEach(command => this.components.set(command.options.name, command));
+
     const messageCommands = [
       ...await this.fetchBuiltInCommands('MessageCommand'),
       ...await this.fetchUserCommands('MessageCommand'),
     ] as MessageCommand[];
     messageCommands.forEach(command => this.messages.set(command.options.name, command));
 
-    const interactionCommands = [
-      ...await this.fetchBuiltInCommands('InteractionCommand'),
-      ...await this.fetchUserCommands('InteractionCommand'),
-    ] as InteractionCommand[];
-    interactionCommands.forEach(command => this.interactions.set(command.options.name, command));
+    const slashCommands = [
+      ...await this.fetchBuiltInCommands('SlashCommand'),
+      ...await this.fetchUserCommands('SlashCommand'),
+    ] as SlashCommand[];
+    slashCommands.forEach(command => this.slashes.set(command.options.name, command));
 
-    this.files = [...messageCommands, ...interactionCommands];
+    this.files = [...componentCommands, ...messageCommands, ...slashCommands];
   }
 
-  public async setInteractions (): Promise<void>
+  public async setSlashCommands (): Promise<void>
   {
     const commands = await this.framework.client.application?.commands.fetch();
 
-    for (const localCommand of this.interactions.values())
+    for (const localCommand of this.slashes.values())
     {
       const command = commands ? commands.find(command => command.name === localCommand.options.name) : null;
       if (!command)
@@ -78,7 +93,7 @@ export class CommandManager extends BaseManager
     }
 
     // Filter out commands that exist locally.
-    const commandsToDelete = commands?.filter(command => this.interactions.get(command.name) ? false : true);
+    const commandsToDelete = commands?.filter(command => this.slashes.get(command.name) ? false : true);
     if (!commandsToDelete) return;
 
     for (const command of commandsToDelete.values())

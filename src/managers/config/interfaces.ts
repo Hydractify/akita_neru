@@ -1,6 +1,7 @@
 import { ClientOptions } from 'discord.js';
 import { ConnectionOptions } from 'typeorm';
 import { EventEmitter } from 'events';
+import { TranscodeEncoding } from 'buffer';
 
 import { ICommandOptions } from '../../structures/command/interfaces';
 
@@ -12,9 +13,9 @@ export interface IConfig
   }
   commands: {
     allowDM?: boolean
+    customIdEncoding: TranscodeEncoding
     defaultOptions: ICommandOptions
     directory: string
-    disabled?: boolean
     prefix: string[]
   }
   database: {

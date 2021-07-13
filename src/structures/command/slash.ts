@@ -5,8 +5,8 @@ import { AkitaNeru } from '../../managers/framework';
 import { BaseCommand } from './base';
 import { ICommandOptions } from './interfaces';
 
-/** The abstract class for creating interaction commands */
-export abstract class InteractionCommand extends BaseCommand
+/** The abstract class for creating slash commands. */
+export abstract class SlashCommand extends BaseCommand
 {
   constructor (akita: AkitaNeru, filename: string, options: ICommandOptions)
   {
@@ -32,8 +32,10 @@ export abstract class InteractionCommand extends BaseCommand
    * @param {Interaction} interaction
    * @param {CommandEntry} entry - The command entry data within the database.
    */
-  public async execute (interaction: Interaction, entry: CommandEntry): Promise<void>
+  public execute (interaction: Interaction, entry: CommandEntry): void
   {
+    if (!interaction.isCommand()) return;
+
     this.entry = entry;
 
     return this.callback(interaction);

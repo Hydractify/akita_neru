@@ -18,11 +18,12 @@ export interface ICommandOptions
   isDeveloper?: boolean
   name: string
   permissions?: PermissionString[]
-  restricted?: (i: Message | Interaction) => boolean
+  isRestricted?: (i: Message | Interaction) => Promise<boolean> | boolean
 }
 
 export interface ICommandAsserts
 {
   args: string[]
+  commandName: string
   parsedContent: string
 }

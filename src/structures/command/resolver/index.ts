@@ -1,8 +1,9 @@
 import { CommandManager } from '../../../managers/command';
 import { ConfigManager } from '../../../managers/config';
-import { InteractionCommand } from '../interaction';
+import { IContentParse } from './interfaces';
 import { MessageCommand } from '../message';
-import { IPrefixParse } from './interfaces';
+import { SlashCommand } from '../slash';
+import { ComponentCommand } from '../component';
 
 /** General command resolver structure */
 export class CommandResolver
@@ -20,11 +21,11 @@ export class CommandResolver
   /**
    * Parses the content of a message and returns the arguments, command's name and a content without the prefix.
    * @param {string} content
-   * @returns {(IPrefixParse | undefined)}
+   * @returns {(IContentParse | undefined)}
     */
-  public parsePrefix (content: string): IPrefixParse | undefined
+  public parsePrefix (content: string): IContentParse | undefined
   {
-    const strippedContent = content.split(/\s+/);
+    let strippedContent = content.split(/\s+/);
 
     // Find the prefix being used.
     const prefix = this.config.options.commands.prefix
@@ -43,21 +44,63 @@ export class CommandResolver
     if (strippedContent[0].length === prefix.length) strippedContent.shift();
     else strippedContent[0] = strippedContent[0].slice(prefix.length);
 
+    // Remove the command name from the arguments.
+    const commandName = strippedContent[0];
+    strippedContent = strippedContent.slice(1);
+
     return {
+      commandName,
       args: strippedContent,
-      commandName: strippedContent[0],
       parsedContent: strippedContent.join(' '),
     };
   }
 
   /**
-   * Resolves an interaction from an input.
-   * @param {string} name - The command's name
-   * @returns {(InteractionCommand | undefined)}
+   * Parses the custom id of an interaction and returns the arguments, command's name and a parsed full id.
+   * @param {string} customId
+   * @returns {(IContentParse | undefined)}
    */
-  public resolveInteraction (name: string): InteractionCommand | undefined
+  public parseCustomId (customId: string): IContentParse | undefined
   {
-    return this.commands.interactions.get(name);
+    let strippedContent = Buffer
+      .from(customId, this.config.options.commands.customIdEncoding)
+      .toString('utf8')
+      .split(/_+/);
+
+    // Remove the command name from the arguments.
+    const commandName = strippedContent[0];
+    strippedContent = strippedContent.slice(1);
+
+    return {
+      commandName,
+      args: strippedContent,
+      parsedContent: strippedContent.join(' '),
+    };
+  }
+
+  /**
+   * Composes a custom id to be used in a message component.
+   * @param {string} commandName - The name of the command that will be called from this component.
+   * @param {string[]} args - The additional information you want stored with the command id.
+   * @returns {string} - The composed (and maybe encoded) custom id.
+   */
+  public composeCustomId (commandName: string, args: string[]): string | undefined
+  {
+    if (!args || !args.length) return;
+
+    return Buffer
+      .from(`${commandName}_${args.join('_')}`, 'utf8')
+      .toString(this.config.options.commands.customIdEncoding);
+  }
+
+  /**
+   * Resolves an slash command from an input.
+   * @param {string} name - The command's name
+   * @returns {(SlashCommand | undefined)}
+   */
+  public resolveSlash (name: string): SlashCommand | undefined
+  {
+    return this.commands.slashes.get(name);
   }
 
   /**
@@ -68,6 +111,16 @@ export class CommandResolver
   public resolveMessage (name: string): MessageCommand | undefined
   {
     return this.commands.messages.get(name) || this.commands.messages.find(command => command.options.aliases?.includes(name) ?? false);
+  }
+
+  /**
+   * Resolves a component command from a custom id.
+   * @param {string} name - The command's name
+   * @returns {(ComponentCommand | undefined)}
+   */
+  public resolveComponent (name: string): ComponentCommand | undefined
+  {
+    return this.commands.components.get(name);
   }
 
   /**

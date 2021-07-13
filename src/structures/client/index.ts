@@ -1,4 +1,4 @@
-import { Client as DJSClient } from 'discord.js';
+import { Client as DJSClient, Interaction, Message } from 'discord.js';
 
 import { AkitaNeru } from '../../managers/framework';
 import { CommandManager } from '../../managers/command';
@@ -24,7 +24,7 @@ export class Client extends DJSClient
 
     this.framework = akita;
 
-    this.commands = new CommandManager(this.framework);
+    this.commands = new CommandManager(this.framework, this);
 
     this.events = new EventManager(this.framework);
 
@@ -46,20 +46,32 @@ export class Client extends DJSClient
   }
 
   @once('ready')
-  protected _onReady (): void
+  protected onReady (): void
   {
-    console.log(this.user?.tag);
+    this.commands.setSlashCommands();
   }
 
   @on('warn')
-  protected _onWarn (warning: string): void
+  protected onWarn (warning: string): void
   {
     console.log(warning);
   }
 
   @on('debug')
-  protected _onDebug (info: string): void
+  protected onDebug (info: string): void
   {
     console.log(info);
+  }
+
+  @on('interactionCreate')
+  protected onInteractionCreate (interaction: Interaction): void
+  {
+    this.commands.handler.handleInteractionCommand(interaction);
+  }
+
+  @on('messageCreate')
+  protected onMessageCreate (message: Message): void
+  {
+    this.commands.handler.handleMessageCommand(message);
   }
 }

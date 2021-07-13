@@ -9,9 +9,9 @@ export class AkitaNeru
 {
   public client: Client;
 
-  public config: ConfigManager;
+  public readonly config: ConfigManager;
 
-  public database: DatabaseManager;
+  public readonly database: DatabaseManager;
 
   constructor (options?: IConfig)
   {
@@ -22,7 +22,6 @@ export class AkitaNeru
 
   public async init (): Promise<void>
   {
-    // Initialise ConfigManager
     await this.config.init();
 
     await this.database.init();

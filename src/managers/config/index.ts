@@ -1,8 +1,9 @@
 import { ConnectionOptions } from 'typeorm';
-import { EventEmitter } from 'events';
 import { Dirent, existsSync } from 'fs';
-import { readdir, readFile } from 'fs/promises';
+import { EventEmitter } from 'events';
+import { TranscodeEncoding } from 'buffer';
 import { join, normalize, sep } from 'path';
+import { readdir, readFile } from 'fs/promises';
 
 import { BaseManagedFile } from '../../structures/file';
 import { ChannelType } from '../../structures/command/enums';
@@ -198,6 +199,7 @@ export class ConfigManager extends BaseManagedFile
   private handleCommandValidation (): void
   {
     const defaults = {
+      customIdEncoding: 'utf8' as TranscodeEncoding,
       defaultOptions: {
         name: '',
         description: '',
@@ -205,21 +207,23 @@ export class ConfigManager extends BaseManagedFile
         cooldown: 5000, // 5 seconds.
       },
       directory: join(this.projectRootDirectory, 'commands'),
-      disabled: false,
       prefix: ['-'],
     };
 
     // If there isn't any configuration set for commands, set basic defaults;
     if (!this.options.commands) this.options.commands = defaults;
 
-    // Set a default prefix if there are none.
-    if (!this.options.commands.prefix) this.options.commands.prefix = defaults.prefix;
+    // Set a default character encoding for custom ids in interactions.
+    if (!this.options.commands.customIdEncoding) this.options.commands.customIdEncoding = defaults.customIdEncoding;
 
     // Set default options for new commands if there are none.
     if (!this.options.commands.defaultOptions) this.options.commands.defaultOptions = defaults.defaultOptions;
 
     // Set a default directory for commands if there is none.
     if (!this.options.commands.directory) this.options.commands.directory = defaults.directory;
+
+    // Set a default prefix if there are none.
+    if (!this.options.commands.prefix) this.options.commands.prefix = defaults.prefix;
   }
 
   private async handleDatabaseValidation (): Promise<void>

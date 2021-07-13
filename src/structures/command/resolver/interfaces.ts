@@ -1,4 +1,4 @@
-export interface IPrefixParse
+export interface IContentParse
 {
   args: string[]
   commandName: string
